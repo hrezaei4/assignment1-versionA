@@ -3,7 +3,7 @@
 '''
 OPS435 Assignment 1 - Summer 2023
 Program: assignment1.py 
-Author: "Student Name"
+Author: "Hossein"
 The python code in this file (a1_[Student_id].py) is original work written by
 "Student Name". No code in this file is copied from any other source
 except those provided by the course instructor, including any person,
@@ -24,10 +24,16 @@ def day_of_week(year: int, month: int, date: int) -> str:
     num = (year + year//4 - year//100 + year//400 + offset[month] + date) % 7
     return days[num]
 
-
 def mon_max(month:int, year:int) -> int:
-    "returns the maximum day for a given month. Includes leap year check"
-    ...
+    "Returns the maximum day for a given month. Includes leap year check"
+    if month in [1, 3, 5, 7, 8, 10, 12]:
+        return 31
+    elif month in [4, 6, 9, 11]:
+        return 30
+    elif month == 2:
+        return 29 if leap_year(year) else 28
+    else:
+        raise ValueError("Invalid month")
 
 def after(date: str) -> str:
     '''
@@ -60,23 +66,55 @@ def after(date: str) -> str:
 
     return next_date
 
-
 def usage():
     "Print a usage message to the user"
-    ...
-
+    print("Usage: assignment1.py YYYY-MM-DD YYYY-MM-DD")
+    sys.exit(1)
 
 def leap_year(year: int) -> bool:
-    "return True if the year is a leap year"
-    ...
+    "Return True if the year is a leap year"
+    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 def valid_date(date: str) -> bool:
-    "check validity of date and return True if valid"
-    ...
+    "Check validity of date and return True if valid"
+    try:
+        parts = date.split('-')
+        if len(parts) != 3:
+            return False
+        year, month, day = map(int, parts)
+
+        if 1 <= month <= 12 and 1 <= day <= mon_max(month, year):
+            return True
+        else:
+            return False
+    except (ValueError, IndexError):
+        return False
 
 def day_count(start_date: str, stop_date: str) -> int:
     "Loops through range of dates, and returns number of weekend days"
-    ...
+    count = 0
+    current_date = start_date
+
+    while current_date <= stop_date:
+        year, month, day = map(int, current_date.split('-'))
+        dow = day_of_week(year, month, day)
+        if dow in ['sat', 'sun']:
+            count += 1
+        current_date = after(current_date)
+
+    return count
 
 if __name__ == "__main__":
-    ...
+    if len(sys.argv) != 3:
+        usage()
+
+    start_date, end_date = sys.argv[1], sys.argv[2]
+
+    if not valid_date(start_date) or not valid_date(end_date):
+        usage() 
+
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    weekend_days = day_count(start_date, end_date)
+    print(f"The period between {start_date} and {end_date} includes {weekend_days} weekend days.")
